@@ -8,88 +8,26 @@ namespace Mochineko.SimpleAudioCodec
     internal static class WaveFileReaderExtension
     {
         /// <summary>
-        /// Extends <see cref="NAudio.Wave.WaveFileReader.ReadNextSampleFrame()"/> to block samples.
+        /// Reads next block of frames with buffers.
+        /// Extends <see cref="NAudio.Wave.WaveFileReader.ReadNextSampleFrame()"/> to block of frames with buffer.
         /// </summary>
         /// <param name="reader"></param>
-        /// <param name="blockFramesCount"></param>
-        /// <param name="blockSamples"></param>
-        /// <returns>Not end of file</returns>
-        /// <exception cref="InvalidOperationException"></exception>
-        /// <exception cref="InvalidDataException"></exception>
-        public static bool ReadNextBlockFrames(
-            this WaveFileReader reader,
-            int blockFramesCount,
-            out float[] blockSamples)
-        {
-            var waveFormat = reader.WaveFormat;
-            switch (waveFormat.Encoding)
-            {
-                case WaveFormatEncoding.Pcm:
-                case WaveFormatEncoding.IeeeFloat:
-                case WaveFormatEncoding.Extensible:
-                    // n.b. not necessarily PCM, should probably write more code to handle this case
-                    break;
-                default:
-                    throw new InvalidOperationException("Only 16, 24 or 32 bit PCM or IEEE float audio data supported");
-            }
-
-            // 1 frame = 1 float
-            var blockSamplesCount = waveFormat.Channels * blockFramesCount;
-            blockSamples = new float[blockSamplesCount];
-
-            var bytesCountPerSample = waveFormat.BitsPerSample / sizeof(byte);
-            var blockBytesCount = blockSamplesCount * bytesCountPerSample;
-            var buffer = new byte[blockBytesCount];
-
-            // May throw
-            // Read bytes to buffer
-            var readBytesCount = reader.Read(buffer, 0, blockBytesCount);
-            // End of file
-            if (readBytesCount == 0)
-            {
-                return false;
-            }
-
-            var framesCountToRead = blockFramesCount;
-            // Read bytes count is smaller than block
-            if (readBytesCount < blockBytesCount)
-            {
-                // Recalculate frames count
-                framesCountToRead
-                    = readBytesCount / (waveFormat.Channels * bytesCountPerSample);
-            }
-
-            // Decode block frames
-            var sampleOffset = 0;
-            var bufferOffset = 0;
-            for (var frameIndex = 0; frameIndex < framesCountToRead; frameIndex++)
-            {
-                for (var channel = 0; channel < waveFormat.Channels; channel++)
-                {
-                    blockSamples[sampleOffset] = DecodeSample(waveFormat, buffer, ref bufferOffset);
-                    sampleOffset++;
-                }
-            }
-
-            return true;
-        }
-        
-        /// <summary>
-        /// Extends <see cref="NAudio.Wave.WaveFileReader.ReadNextSampleFrame()"/> to block samples with buffer.
-        /// </summary>
-        /// <param name="reader"></param>
-        /// <param name="blockFramesCount"></param>
-        /// <param name="samples"></param>
+        /// <param name="framesCountInBlock"></param>
+        /// <param name="samplesBuffer"></param>
         /// <param name="bytesBuffer"></param>
-        /// <returns></returns>
-        /// <exception cref="InvalidOperationException"></exception>
-        public static bool ReadNextBlockFramesWithBuffer(
+        /// <returns>Read samples count. Returns 0 at the end of file.</returns>
+        /// <exception cref="InvalidOperationException">Validation errors</exception>
+        /// <exception cref="IOException">I/O error</exception>
+        /// <exception cref="NotSupportedException">Cannot read stream</exception>
+        /// <exception cref="ObjectDisposedException">Stream is closed</exception>
+        public static int ReadNextBlockOfFramesWithBuffer(
             this WaveFileReader reader,
-            int blockFramesCount,
-            float[] samples,
+            int framesCountInBlock,
+            float[] samplesBuffer,
             byte[] bytesBuffer)
         {
             var waveFormat = reader.WaveFormat;
+            // Encoding validation
             switch (waveFormat.Encoding)
             {
                 case WaveFormatEncoding.Pcm:
@@ -101,55 +39,65 @@ namespace Mochineko.SimpleAudioCodec
                     throw new InvalidOperationException("Only 16, 24 or 32 bit PCM or IEEE float audio data supported");
             }
 
-            // 1 frame = 1 float
-            var blockSamplesCount = waveFormat.Channels * blockFramesCount;
-            if (samples.Length != blockSamplesCount)
+            var samplesCountInBlock = waveFormat.Channels * framesCountInBlock;
+            // Samples buffer length validation
+            if (samplesBuffer.Length != samplesCountInBlock)
             {
-                throw new InvalidOperationException($"Block samples count must be {blockSamplesCount} but {samples.Length}");
+                throw new InvalidOperationException(
+                    $"Samples count in block must be {samplesCountInBlock} but {samplesBuffer.Length}");
             }
-            Array.Clear(samples, 0, samples.Length);
+            Array.Clear(samplesBuffer, 0, samplesBuffer.Length);
 
             var bytesCountPerSample = waveFormat.BitsPerSample / sizeof(byte);
-            var blockBytesCount = blockSamplesCount * bytesCountPerSample;
-            if (bytesBuffer.Length != blockBytesCount)
+            var bytesCountInFrame = waveFormat.Channels * bytesCountPerSample;
+            var bytesCountInBlock = samplesCountInBlock * bytesCountPerSample;
+            // Bytes buffer length validation
+            if (bytesBuffer.Length != bytesCountInBlock)
             {
-                throw new InvalidOperationException($"Buffer bytes count must be {blockBytesCount} but {bytesBuffer.Length}");
+                throw new InvalidOperationException(
+                    $"Buffer bytes count must be {bytesCountInBlock} but {bytesBuffer.Length}");
             }
             Array.Clear(bytesBuffer, 0, bytesBuffer.Length);
 
-            // May throw
-            // Read bytes to buffer
-            var readBytesCount = reader.Read(bytesBuffer, 0, blockBytesCount);
+            // Actually read bytes to buffer
+            var readBytesCount = reader.Read(bytesBuffer, 0, bytesCountInBlock);
             // End of file
             if (readBytesCount == 0)
             {
-                return false;
+                return 0;
             }
 
-            var framesCountToRead = blockFramesCount;
-            // Read bytes count is smaller than block
-            if (readBytesCount < blockBytesCount)
+            var framesCountToRead = framesCountInBlock;
+            if (readBytesCount < bytesCountInBlock)
             {
                 // Recalculate frames count
-                framesCountToRead
-                    = readBytesCount / (waveFormat.Channels * bytesCountPerSample);
+                framesCountToRead = readBytesCount / bytesCountInFrame;
             }
 
-            // Decode block frames
+            // Decode block of frames
             var sampleOffset = 0;
             var bufferOffset = 0;
             for (var frameIndex = 0; frameIndex < framesCountToRead; frameIndex++)
             {
                 for (var channel = 0; channel < waveFormat.Channels; channel++)
                 {
-                    samples[sampleOffset] = DecodeSample(waveFormat, bytesBuffer, ref bufferOffset);
+                    samplesBuffer[sampleOffset] = DecodeSample(waveFormat, bytesBuffer, ref bufferOffset);
                     sampleOffset++;
                 }
             }
 
-            return true;
+            return framesCountToRead * waveFormat.Channels;
         }
 
+        /// <summary>
+        /// Decodes a sample from buffer with offset.
+        /// Excluded from <see cref="NAudio.Wave.WaveFileReader.ReadNextSampleFrame()"/>.
+        /// </summary>
+        /// <param name="waveFormat"></param>
+        /// <param name="buffer"></param>
+        /// <param name="offset"></param>
+        /// <returns>Decoded sample as float</returns>
+        /// <exception cref="InvalidOperationException">Invalid bits per samples of format</exception>
         private static float DecodeSample(WaveFormat waveFormat, byte[] buffer, ref int offset)
         {
             if (waveFormat.BitsPerSample == 16)
@@ -171,7 +119,7 @@ namespace Mochineko.SimpleAudioCodec
             else if (waveFormat.BitsPerSample == 32)
             {
                 offset += 4;
-                return BitConverter.ToInt32(buffer, offset) / (Int32.MaxValue + 1f);
+                return BitConverter.ToInt32(buffer, offset) / (int.MaxValue + 1f);
             }
             else
             {
