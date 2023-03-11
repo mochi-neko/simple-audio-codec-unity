@@ -63,7 +63,7 @@ namespace Mochineko.SimpleAudioCodec
             
             // total samples = channels * frames
             var samplesBuffer = new float[framesCountInBlock * header.Channels];
-            var bytesBuffer = new byte[header.Channels * framesCountInBlock * (header.BitsPerSample / sizeof(byte))];
+            var bytesBuffer = new byte[header.Channels * framesCountInBlock * header.BitsPerSample / 8];
             var sampleOffset = 0;
             int readSamplesCount;
             while ((readSamplesCount = reader.ReadNextBlockOfFramesWithBuffer(framesCountInBlock, samplesBuffer, bytesBuffer)) 

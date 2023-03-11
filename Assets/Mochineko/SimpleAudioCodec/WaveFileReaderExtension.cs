@@ -48,7 +48,7 @@ namespace Mochineko.SimpleAudioCodec
             }
             Array.Clear(samplesBuffer, 0, samplesBuffer.Length);
 
-            var bytesCountPerSample = waveFormat.BitsPerSample / sizeof(byte);
+            var bytesCountPerSample = waveFormat.BitsPerSample / 8;
             var bytesCountInFrame = waveFormat.Channels * bytesCountPerSample;
             var bytesCountInBlock = samplesCountInBlock * bytesCountPerSample;
             // Bytes buffer length validation
@@ -100,31 +100,34 @@ namespace Mochineko.SimpleAudioCodec
         /// <exception cref="InvalidOperationException">Invalid bits per samples of format</exception>
         private static float DecodeSample(WaveFormat waveFormat, byte[] buffer, ref int offset)
         {
+            float result;
             if (waveFormat.BitsPerSample == 16)
             {
+                result = BitConverter.ToInt16(buffer, offset) / 32768f;
                 offset += 2;
-                return BitConverter.ToInt16(buffer, offset) / 32768f;
             }
             else if (waveFormat.BitsPerSample == 24)
             {
+                result = (((sbyte)buffer[offset + 2] << 16) | (buffer[offset + 1] << 8) | buffer[offset])
+                         / 8388608f;
                 offset += 3;
-                return (((sbyte)buffer[offset + 2] << 16) | (buffer[offset + 1] << 8) | buffer[offset])
-                       / 8388608f;
             }
             else if (waveFormat is { BitsPerSample: 32, Encoding: WaveFormatEncoding.IeeeFloat })
             {
+                result = BitConverter.ToSingle(buffer, offset);
                 offset += 4;
-                return BitConverter.ToSingle(buffer, offset);
             }
             else if (waveFormat.BitsPerSample == 32)
             {
+                result = BitConverter.ToInt32(buffer, offset) / (int.MaxValue + 1f);
                 offset += 4;
-                return BitConverter.ToInt32(buffer, offset) / (int.MaxValue + 1f);
             }
             else
             {
                 throw new InvalidOperationException("Unsupported bit depth");
             }
+
+            return result;
         }
     }
 }
