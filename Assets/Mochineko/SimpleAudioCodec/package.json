@@ -1,0 +1,12 @@
+{
+  "name": "com.mochineko.simple-audio-codec-unity",
+  "version": "0.1.0",
+  "displayName": "Simple Audio Codec",
+  "description": "Provides simple decoding and encoding of audio codecs for Unity.",
+  "unity": "2021.3",
+  "author": {
+    "name": "Mochineko",
+    "email": "t.o.e.4315@gmail.com",
+    "url": "https://github.com/naudio/NAudio"
+  }
+}
