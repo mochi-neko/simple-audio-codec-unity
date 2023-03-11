@@ -1,0 +1,12 @@
+{
+  "name": "com.naudio.core",
+  "version": "2.1.0",
+  "displayName": "NAudio.Core",
+  "description": "Core library of NAudio.",
+  "unity": "2021.3",
+  "author": {
+    "name": "Mochineko",
+    "email": "t.o.e.4315@gmail.com",
+    "url": "https://github.com/naudio/NAudio"
+  }
+}
