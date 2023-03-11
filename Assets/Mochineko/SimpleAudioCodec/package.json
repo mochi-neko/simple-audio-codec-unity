@@ -1,6 +1,6 @@
 {
   "name": "com.mochineko.simple-audio-codec-unity",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "displayName": "Simple Audio Codec",
   "description": "Provides simple decoding and encoding of audio codecs for Unity.",
   "unity": "2021.3",

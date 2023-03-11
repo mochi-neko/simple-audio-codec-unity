@@ -13,6 +13,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add MP3 decoding with NAudio / NLayer
 - Add MP3 encoding with NAudio?
 
+## [0.1.1] - 2023-03-11
+
+### Fixed
+
+- Fix failures to decode wave file
+
 ## [0.1.0] - 2023-03-11
 
 ### Added
