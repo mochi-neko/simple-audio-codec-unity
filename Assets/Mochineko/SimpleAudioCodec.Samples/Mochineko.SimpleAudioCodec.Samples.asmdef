@@ -1,0 +1,17 @@
+{
+    "name": "Mochineko.SimpleAudioCodec.Samples",
+    "rootNamespace": "",
+    "references": [
+        "GUID:ed5edd2439f854f75a164ed9d6e1f3bc",
+        "GUID:f51ebe6a0ceec4240a699833d6309b23"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
