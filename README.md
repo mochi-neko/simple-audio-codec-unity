@@ -8,7 +8,7 @@ Provides simple decoding and encoding of audio codecs by [NAudio](https://github
 {
   "dependencies": {
     "com.mochineko.simple-audio-codec-unity": "https://github.com/mochi-neko/simple-audio-codec-unity.git?path=/Assets/Mochineko/SimpleAudioCodec#0.1.0",
-    "com.naudio.core": "https://github.com/mochi-neko/simple-audio-codec-unity.git?path=/Assets/Mochineko/NAudio/NAudio.Core#0.1.0",
+    "com.naudio.core": "https://github.com/mochi-neko/simple-audio-codec-unity.git?path=/Assets/NAudio/NAudio.Core#0.1.0",
     ...
   }
 }
