@@ -49,7 +49,7 @@ namespace Mochineko.SimpleAudioCodec.Samples
 
             try
             {
-                audioClip = await WaveDecoder.DecodeBlockByBlockAsync(stream, "file.wav", cancellationToken);
+                audioClip = await WaveDecoder.DecodeBlockByBlockAsync(stream, fileName, cancellationToken);
                 Debug.Log($"Succeeded to decode wave:{audioClip.samples}");
             }
             catch (Exception e)
