@@ -10,10 +10,13 @@ namespace Mochineko.SimpleAudioCodec
 {
     public static class WaveDecoder
     {
+        private const int RecommendedFramesCountInBlock = 1024 * 32;
+        
         /// <summary>
-        /// Decodes wave file to AudioClip.
-        /// Because frames count is very large, thread switching can be overhead.
-        /// Therefore it decodes in blocks of frames.
+        /// Decodes wave file to AudioClip by decoding block by block.
+        /// If it decodes large file at once, it uses large memories.
+        /// If it decodes large file frame by frame, thread switching is overhead of process.
+        /// Therefore it decodes in blocks of frames for memory and process.
         /// </summary>
         /// <param name="stream">Wave data stream</param>
         /// <param name="fileName">File name</param>
@@ -26,11 +29,11 @@ namespace Mochineko.SimpleAudioCodec
         /// <exception cref="InvalidDataException"></exception>
         /// <exception cref="IOException"></exception>
         /// <exception cref="ObjectDisposedException"></exception>
-        public static async UniTask<AudioClip> DecodeAsync(
+        public static async UniTask<AudioClip> DecodeBlockByBlockAsync(
             Stream stream,
             string fileName,
             CancellationToken cancellationToken,
-            int framesCountInBlock = 1024 * 16)
+            int framesCountInBlock = RecommendedFramesCountInBlock)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -38,14 +41,12 @@ namespace Mochineko.SimpleAudioCodec
             {
                 throw new IOException($"Cannot read stream.");
             }
-            
-            await UniTask.SwitchToThreadPool();
 
             await using var reader = new WaveFileReader(stream);
-            var header = reader.WaveFormat;
-            if (header == null)
+            var format = reader.WaveFormat;
+            if (format == null)
             {
-                throw new Exception($"Wave format header is null.");
+                throw new Exception($"Wave format is null.");
             }
             
             // Can create AudioClip only on the main thread
@@ -53,17 +54,18 @@ namespace Mochineko.SimpleAudioCodec
 
             var audioClip = AudioClip.Create(
                 name:fileName,
-                lengthSamples:(int)reader.SampleCount,
-                channels:header.Channels,
-                frequency:header.SampleRate,
+                lengthSamples:(int)reader.SampleCount * format.Channels, // SampleCount does not take into account channels
+                channels:format.Channels,
+                frequency:format.SampleRate,
                 stream:false
             );
             
             await UniTask.SwitchToThreadPool();
             
             // total samples = channels * frames
-            var samplesBuffer = new float[framesCountInBlock * header.Channels];
-            var bytesBuffer = new byte[header.Channels * framesCountInBlock * header.BitsPerSample / 8];
+            var samplesBuffer = new float[framesCountInBlock * format.Channels];
+            // block align = bytes per frame = channels * bytes per sample
+            var bytesBuffer = new byte[framesCountInBlock * format.BlockAlign];
             var sampleOffset = 0;
             int readSamplesCount;
             while ((readSamplesCount = reader.ReadNextBlockOfFramesWithBuffer(framesCountInBlock, samplesBuffer, bytesBuffer)) 
@@ -78,6 +80,7 @@ namespace Mochineko.SimpleAudioCodec
                 }
                 else
                 {
+                    // Set just enough length of samples
                     var justLengthSamples = new float[readSamplesCount];
                     Array.Copy(samplesBuffer, justLengthSamples, readSamplesCount);
                     audioClip.SetData(justLengthSamples, sampleOffset);

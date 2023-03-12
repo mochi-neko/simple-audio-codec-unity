@@ -2,6 +2,7 @@
 using System;
 using System.IO;
 using NAudio.Wave;
+using UnityEngine;
 
 namespace Mochineko.SimpleAudioCodec
 {
@@ -26,9 +27,9 @@ namespace Mochineko.SimpleAudioCodec
             float[] samplesBuffer,
             byte[] bytesBuffer)
         {
-            var waveFormat = reader.WaveFormat;
+            var format = reader.WaveFormat;
             // Encoding validation
-            switch (waveFormat.Encoding)
+            switch (format.Encoding)
             {
                 case WaveFormatEncoding.Pcm:
                 case WaveFormatEncoding.IeeeFloat:
@@ -39,8 +40,7 @@ namespace Mochineko.SimpleAudioCodec
                     throw new InvalidOperationException("Only 16, 24 or 32 bit PCM or IEEE float audio data supported");
             }
 
-            var samplesCountInBlock = waveFormat.Channels * framesCountInBlock;
-            // Samples buffer length validation
+            var samplesCountInBlock = framesCountInBlock * format.Channels;
             if (samplesBuffer.Length != samplesCountInBlock)
             {
                 throw new InvalidOperationException(
@@ -48,10 +48,7 @@ namespace Mochineko.SimpleAudioCodec
             }
             Array.Clear(samplesBuffer, 0, samplesBuffer.Length);
 
-            var bytesCountPerSample = waveFormat.BitsPerSample / 8;
-            var bytesCountInFrame = waveFormat.Channels * bytesCountPerSample;
-            var bytesCountInBlock = samplesCountInBlock * bytesCountPerSample;
-            // Bytes buffer length validation
+            var bytesCountInBlock = framesCountInBlock * format.BlockAlign;
             if (bytesBuffer.Length != bytesCountInBlock)
             {
                 throw new InvalidOperationException(
@@ -61,6 +58,7 @@ namespace Mochineko.SimpleAudioCodec
 
             // Actually read bytes to buffer
             var readBytesCount = reader.Read(bytesBuffer, 0, bytesCountInBlock);
+
             // End of file
             if (readBytesCount == 0)
             {
@@ -71,7 +69,7 @@ namespace Mochineko.SimpleAudioCodec
             if (readBytesCount < bytesCountInBlock)
             {
                 // Recalculate frames count
-                framesCountToRead = readBytesCount / bytesCountInFrame;
+                framesCountToRead = readBytesCount / format.BlockAlign;
             }
 
             // Decode block of frames
@@ -79,14 +77,14 @@ namespace Mochineko.SimpleAudioCodec
             var bufferOffset = 0;
             for (var frameIndex = 0; frameIndex < framesCountToRead; frameIndex++)
             {
-                for (var channel = 0; channel < waveFormat.Channels; channel++)
+                for (var channel = 0; channel < format.Channels; channel++)
                 {
-                    samplesBuffer[sampleOffset] = DecodeSample(waveFormat, bytesBuffer, ref bufferOffset);
+                    samplesBuffer[sampleOffset] = DecodeSample(format, bytesBuffer, ref bufferOffset);
                     sampleOffset++;
                 }
             }
 
-            return framesCountToRead * waveFormat.Channels;
+            return framesCountToRead * format.Channels;
         }
 
         /// <summary>

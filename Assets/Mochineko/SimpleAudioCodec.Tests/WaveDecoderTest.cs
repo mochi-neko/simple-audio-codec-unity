@@ -13,6 +13,16 @@ namespace Mochineko.SimpleAudioCodec.Tests
     [TestFixture]
     internal sealed class WaveDecoderTest
     {
+        [TestCase("synthesis_2023_03_11_05_42_51.wav", 1024 * 512)]
+        [TestCase("synthesis_2023_03_11_05_42_51.wav", 1024 * 256)]
+        [TestCase("synthesis_2023_03_11_05_42_51.wav", 1024 * 128)]
+        [TestCase("synthesis_2023_03_11_05_42_51.wav", 1024 * 64)]
+        [TestCase("synthesis_2023_03_11_05_42_51.wav", 1024 * 32)]
+        [TestCase("synthesis_2023_03_11_05_42_51.wav", 1024 * 16)]
+        [TestCase("synthesis_2023_03_11_05_42_51.wav", 1024 * 8)]
+        [TestCase("synthesis_2023_03_11_05_42_51.wav", 1024 * 4)]
+        [TestCase("synthesis_2023_03_11_05_42_51.wav", 1024 * 2)]
+        [TestCase("synthesis_2023_03_11_05_42_51.wav", 1024 * 1)]
         [TestCase("Alesis-Fusion-Pizzicato-Strings-C4.wav", 1024 * 512)]
         [TestCase("Alesis-Fusion-Pizzicato-Strings-C4.wav", 1024 * 256)]
         [TestCase("Alesis-Fusion-Pizzicato-Strings-C4.wav", 1024 * 128)]
@@ -36,7 +46,7 @@ namespace Mochineko.SimpleAudioCodec.Tests
             var stopWatch = new Stopwatch();
             stopWatch.Start();
 
-            var audioClip = await WaveDecoder.DecodeAsync(
+            var audioClip = await WaveDecoder.DecodeBlockByBlockAsync(
                 stream, fileName, CancellationToken.None, framesCountInBlock);
 
             stopWatch.Stop();
