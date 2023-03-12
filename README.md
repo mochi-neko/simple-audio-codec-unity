@@ -2,6 +2,13 @@
 
 Provides simple decoding and encoding of audio codecs by [NAudio](https://github.com/naudio/NAudio) for Unity.
 
+## Features
+
+- Low load to the main thread of Unity
+  - Runs decoding of data on a thread pool using [UniTask](https://github.com/Cysharp/UniTask) and set data to AudioClip on the main thread.
+- Low memory allocation
+  - Decodes WAVE file for each block of frames with array buffers.
+
 ## How to import by UnityPackageManager
 
 ```json
