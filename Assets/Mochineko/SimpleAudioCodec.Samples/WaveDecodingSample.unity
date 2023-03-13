@@ -427,7 +427,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9c4bfc1b12e64e82b98b6764f8c11605, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  fileName: synthesis_2023_03_11_05_42_51.wav
+  fileName: Alesis-Fusion-Pizzicato-Strings-C4.wav
   audioSource: {fileID: 2007516154}
 --- !u!4 &2007516156
 Transform:

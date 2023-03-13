@@ -88,13 +88,13 @@ namespace Mochineko.SimpleAudioCodec
         }
 
         /// <summary>
-        /// Decodes a sample from buffer with offset.
+        /// Decodes one sample of one channel from buffer with offset.
         /// Excluded from <see cref="NAudio.Wave.WaveFileReader.ReadNextSampleFrame()"/>.
         /// </summary>
         /// <param name="waveFormat"></param>
         /// <param name="buffer"></param>
         /// <param name="offset"></param>
-        /// <returns>Decoded sample as float</returns>
+        /// <returns>Decoded one sample of one channel as float</returns>
         /// <exception cref="InvalidOperationException">Invalid bits per samples of format</exception>
         private static float DecodeSample(WaveFormat waveFormat, byte[] buffer, ref int offset)
         {

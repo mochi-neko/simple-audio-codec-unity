@@ -3,6 +3,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
+using NAudio.Wave;
 using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.TestTools;
@@ -34,7 +35,7 @@ namespace Mochineko.SimpleAudioCodec.Tests
         [TestCase("Alesis-Fusion-Pizzicato-Strings-C4.wav", 1024 * 2)]
         [TestCase("Alesis-Fusion-Pizzicato-Strings-C4.wav", 1024 * 1)]
         [RequiresPlayMode(true)]
-        public async Task DecodeAllTest(string fileName, int framesCountInBlock)
+        public async Task DecodeTest(string fileName, int framesCountInBlock)
         {
             var filePath = Path.Combine(
                 Application.dataPath,
@@ -46,14 +47,24 @@ namespace Mochineko.SimpleAudioCodec.Tests
             var stopWatch = new Stopwatch();
             stopWatch.Start();
 
-            var audioClip = await WaveDecoder.DecodeBlockByBlockAsync(
+            var audioClip = await WaveDecoder.DecodeByBlockAsync(
                 stream, fileName, CancellationToken.None, framesCountInBlock);
 
             stopWatch.Stop();
-
-            Debug.Log($"Decoding time:{stopWatch.ElapsedMilliseconds}ms with frames count in block:{framesCountInBlock} for {fileName}");
-
+            
             audioClip.Should().NotBeNull();
+
+            stream.Seek(0, SeekOrigin.Begin);
+
+            await using var reader = new WaveFileReader(stream);
+            var format = reader.WaveFormat;
+            
+            Debug.Log($"Decoding time:{stopWatch.ElapsedMilliseconds}ms with frames count in block:{framesCountInBlock} for {fileName}," +
+                      $" Samples:{reader.SampleCount}, Channels:{format.Channels}");
+
+            audioClip.samples.Should().Be((int)reader.SampleCount);
+            audioClip.frequency.Should().Be(format.SampleRate);
+            audioClip.channels.Should().Be(format.Channels);
             
             UnityEngine.Object.Destroy(audioClip);
         }
