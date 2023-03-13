@@ -14,8 +14,8 @@ Provides simple decoding and encoding of audio codecs by [NAudio](https://github
 ```json
 {
   "dependencies": {
-    "com.mochineko.simple-audio-codec-unity": "https://github.com/mochi-neko/simple-audio-codec-unity.git?path=/Assets/Mochineko/SimpleAudioCodec#0.1.2",
-    "com.naudio.core": "https://github.com/mochi-neko/simple-audio-codec-unity.git?path=/Assets/NAudio/NAudio.Core#0.1.2",
+    "com.mochineko.simple-audio-codec-unity": "https://github.com/mochi-neko/simple-audio-codec-unity.git?path=/Assets/Mochineko/SimpleAudioCodec#0.2.0",
+    "com.naudio.core": "https://github.com/mochi-neko/simple-audio-codec-unity.git?path=/Assets/NAudio/NAudio.Core#0.2.0",
     "com.cysharp.unitask": "https://github.com/Cysharp/UniTask.git?path=src/UniTask/Assets/Plugins/UniTask",
     ...
   }
@@ -24,16 +24,20 @@ Provides simple decoding and encoding of audio codecs by [NAudio](https://github
 
 ## Avairable codecs
 
-- WAVE
+- WAV
   - [x] Decoding
-  - [ ] Encoding
+  - [x] Encoding
 - MP3
   - [ ] Decoding
   - [ ] Encoding
 
+## Hot to use
+
+See [Samples](https://github.com/mochi-neko/simple-audio-codec-unity/tree/main/Assets/Mochineko/SimpleAudioCodec.Samples) or [Tests](https://github.com/mochi-neko/simple-audio-codec-unity/tree/main/Assets/Mochineko/SimpleAudioCodec.Tests). 
+
 ## Changelog
 
-See [CHANGELOG](https://github.com/mochi-neko/simple-audio-codec-unity/blob/main/CHANGELOG.md)
+See [CHANGELOG](https://github.com/mochi-neko/simple-audio-codec-unity/blob/main/CHANGELOG.md).
 
 ## 3rd Party Notices
 
@@ -41,4 +45,4 @@ See [NOTICE](https://github.com/mochi-neko/simple-audio-codec-unityy/blob/main/N
 
 ## License
 
-[MIT License](https://github.com/mochi-neko/simple-audio-codec-unity/blob/main/LICENSE)
+[MIT License](https://github.com/mochi-neko/simple-audio-codec-unity/blob/main/LICENSE).
