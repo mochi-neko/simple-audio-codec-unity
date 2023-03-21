@@ -7,7 +7,7 @@ Provides simple decoding and encoding of audio codecs by [NAudio](https://github
 - Low load to the main thread of Unity
   - Runs decoding of data on a thread pool using [UniTask](https://github.com/Cysharp/UniTask) and set data to AudioClip on the main thread.
 - Low memory allocation
-  - Decodes WAVE file for each block of frames with array buffers.
+  - Decodes WAV file for each block of frames with array buffers.
 
 ## How to import by UnityPackageManager
 
@@ -31,7 +31,7 @@ Provides simple decoding and encoding of audio codecs by [NAudio](https://github
   - [ ] Decoding
   - [ ] Encoding
 
-## Hot to use
+## How to use
 
 See [Samples](https://github.com/mochi-neko/simple-audio-codec-unity/tree/main/Assets/Mochineko/SimpleAudioCodec.Samples) or [Tests](https://github.com/mochi-neko/simple-audio-codec-unity/tree/main/Assets/Mochineko/SimpleAudioCodec.Tests). 
 
